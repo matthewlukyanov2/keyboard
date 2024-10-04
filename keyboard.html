@@ -20,34 +20,106 @@
     <canvas id="canvas-for-ball"></canvas>
 
     <script type="text/javascript">
-		// Gets a handle to the element with id canvasOne.
-		var canvas = document.getElementById("canvas-for-ball");
-		// Get a 2D context for the canvas.
-		var ctx = canvas.getContext("2d");
-		// Make the fill style red.
-		ctx.fillStyle = "rgb(255, 0, 0)";
+		// Ball class representing the peace sign ball
+        class Ball {
+            constructor(x, y, radius, xVelocity, yVelocity, rotationSpeed) {
+                this.x = x; // x position of the ball
+                this.y = y; // y position of the ball
+                this.radius = radius; // radius of the ball
+                this.xVelocity = xVelocity; // horizontal velocity
+                this.yVelocity = yVelocity; // vertical velocity
+                this.rotationSpeed = rotationSpeed; // speed of rotation
+                this.rotationAngle = 0; // current rotation angle
+            }
 
-		// Add a Javascript event listener to the keypress event.
-		window.addEventListener("keypress", function(event) { 
-			// Just log the event to the console.
-			console.log(event);
-		});
+            // Draw the peace sign using Cartesian to Polar conversion
+            draw(ctx) {
+                ctx.save(); 
+                ctx.translate(this.x, this.y); 
+                ctx.rotate(this.rotationAngle); 
 
-		//keypresses with jQuery
-		$(document.body).on('keydown', function(e) {
-			console.log(e.which);
-			switch (e.which) {
-			// key code for left arrow
-			case 37:
-				console.log('left arrow key pressed!');
-				break;
+                // Draw outer circle 
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2); 
+                ctx.stroke();
 
-			// key code for right arrow
-			case 39:
-				console.log('right arrow key pressed!');
-				break;
-			}
-		});
+                // Draw the peace sign inner lines
+                ctx.beginPath();
+                ctx.moveTo(0, -this.radius); 
+                ctx.lineTo(0, this.radius); 
+                ctx.stroke();
+
+                // Left diagonal line 
+                ctx.beginPath();
+                let angle1 = (5 * Math.PI) / 4; 
+                ctx.moveTo(0, 0); 
+                ctx.lineTo(Math.cos(angle1) * this.radius, Math.sin(angle1) * this.radius); 
+                ctx.stroke();
+
+                // Right diagonal line 
+                ctx.beginPath();
+                let angle2 = (7 * Math.PI) / 4; 
+                ctx.moveTo(0, 0); 
+                ctx.lineTo(Math.cos(angle2) * this.radius, Math.sin(angle2) * this.radius); 
+                ctx.stroke();
+
+                ctx.restore(); // Restore the original context 
+            }
+
+            // Move the ball and handle wall collisions
+            move(canvasWidth, canvasHeight) {
+                // Update ball position
+                this.x += this.xVelocity;
+                this.y += this.yVelocity;
+
+                // Collision detection left/right walls
+                if (this.x - this.radius <= 0 || this.x + this.radius >= canvasWidth) {
+                    this.xVelocity = -this.xVelocity; // Reverse horizontal direction
+                    this.rotationSpeed = -this.rotationSpeed; 
+                }
+
+                // Collision detection top/bottom walls
+                if (this.y - this.radius <= 0 || this.y + this.radius >= canvasHeight) {
+                    this.yVelocity = -this.yVelocity; 
+                    this.rotationSpeed = -this.rotationSpeed; 
+                }
+
+                // Update the rotation angle
+                this.rotationAngle += this.rotationSpeed;
+            }
+
+            // Resize the ball 
+            resize(newRadius) {
+                this.radius = newRadius; 
+            }
+
+            // Rotate the ball 
+            rotate(angle) {
+                this.rotationAngle += angle; 
+            }
+        }
+
+        // Set up the canvas and its context
+        const canvas = document.getElementById("canvas-for-ball");
+        const ctx = canvas.getContext("2d");
+
+        // Create a new ball object 
+        let ball = new Ball(150, 150, 40, 2, 2, 0.05); 
+
+        // Animation loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); 
+
+            // Move and draw the ball 
+            ball.move(canvas.width, canvas.height); 
+            ball.draw(ctx); 
+
+            // Continue the animation
+            window.requestAnimationFrame(animate);
+        }
+
+        // Start the animation
+        animate();
     </script>
 
   </body>
